@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Al Tasnim · HSE Coverage Tracker — Nimr</title>
+<meta name="theme-color" content="#204099">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/*══════ CONFIG-DRIVEN THEME ══════*/
+:root{
+  --navy:#204099; --navy-d:#162d75; --orange:#F48220; --charcoal:#4D545B;
+  --bg:#0b0f1a; --bg2:#0e1322; --card:#151b2e; --card2:#1a2136;
+  --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.14);
+  --text:#eaeefb; --text2:#9aa6c4; --text3:#65708f;
+  --green:#22c58a; --amber:#f5a524; --red:#f2495c; --sky:#3aa0ff; --violet:#8b7ff0;
+  --radius:14px; --shadow:0 8px 30px rgba(0,0,0,.35);
+  --glow:0 0 0 1px rgba(244,130,32,.35),0 8px 26px rgba(244,130,32,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:
+  radial-gradient(1100px 600px at 78% -10%,rgba(32,64,153,.22),transparent 60%),
+  radial-gradient(900px 500px at -8% 8%,rgba(244,130,32,.10),transparent 55%),
+  var(--bg);
+  color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,.dfont{font-family:'Space Grotesk',Inter,sans-serif}
+.num{font-family:'Rajdhani',sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
+a{color:inherit}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#2a3350;border-radius:6px}
+
+/*══════ MOTION ══════*/
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pop{0%{transform:scale(.96);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes glowpulse{0%,100%{box-shadow:0 0 0 0 rgba(244,130,32,.0)}50%{box-shadow:0 0 0 4px rgba(244,130,32,.10)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.panel.active{animation:fadeUp .5s cubic-bezier(.2,.7,.2,1) both}
+.reveal{animation:fadeUp .55s cubic-bezier(.2,.7,.2,1) both}
+.reveal:nth-child(2){animation-delay:.04s}.reveal:nth-child(3){animation-delay:.08s}
+.reveal:nth-child(4){animation-delay:.12s}.reveal:nth-child(5){animation-delay:.16s}
+.reveal:nth-child(6){animation-delay:.2s}.reveal:nth-child(7){animation-delay:.24s}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/*══════ SHELL ══════*/
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;
+  padding:11px 20px;background:rgba(11,15,26,.82);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border)}
+.logo{height:34px;width:auto;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.brand{display:flex;flex-direction:column;line-height:1.15}
+.brand b{font-family:'Space Grotesk';font-size:14px;letter-spacing:.3px}
+.brand span{font-size:10.5px;color:var(--text2)}
+.tb-spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;
+  background:var(--card);border:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600}
+.chip.on{color:var(--orange);border-color:rgba(244,130,32,.4)}
+.icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--card);
+  color:var(--text2);cursor:pointer;display:grid;place-items:center;font-size:14px;transition:.2s}
+.icon-btn:hover{color:var(--text);border-color:var(--border2);transform:translateY(-1px)}
+
+.wrap{max-width:1180px;margin:0 auto;padding:20px}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.nav-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:11px;cursor:pointer;
+  background:var(--card);border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--text2);
+  transition:.22s cubic-bezier(.2,.7,.2,1)}
+.nav-btn:hover{color:var(--text);transform:translateY(-2px);border-color:var(--border2)}
+.nav-btn.active{color:#fff;background:linear-gradient(135deg,var(--navy),var(--navy-d));
+  border-color:transparent;box-shadow:0 6px 20px rgba(32,64,153,.4)}
+.panel{display:none}.panel.active{display:block}
+
+/*══════ CARDS / GRID ══════*/
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;position:relative;overflow:hidden}
+.card.hoverable{transition:.25s cubic-bezier(.2,.7,.2,1);cursor:pointer}
+.card.hoverable:hover{transform:translateY(-4px);border-color:var(--border2);box-shadow:var(--shadow)}
+.kpi .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.kpi .val{font-family:'Rajdhani';font-size:34px;font-weight:700;margin-top:2px;line-height:1}
+.kpi .sub{font-size:11px;color:var(--text3);margin-top:3px}
+.section-title{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk';font-size:15px;
+  font-weight:600;margin:4px 0 12px}
+.dot{width:9px;height:9px;border-radius:3px;background:var(--orange)}
+
+/*══════ SCORE RING ══════*/
+.ring{--p:0;--c:var(--green);width:112px;height:112px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.07) 0);position:relative}
+.ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--card)}
+.ring .rv{position:relative;font-family:'Rajdhani';font-size:30px;font-weight:700}
+.ring .rs{position:relative;font-size:9px;color:var(--text2);letter-spacing:1px;margin-top:-4px}
+
+/*══════ TABLE ══════*/
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--text3);font-weight:600;font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border)}
+td{padding:9px 10px;border-bottom:1px solid var(--border)}
+tr{transition:.15s}tbody tr:hover{background:rgba(255,255,255,.03)}
+.rankno{font-family:'Rajdhani';font-weight:700;font-size:16px;color:var(--text2);width:34px}
+.bar{height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;min-width:60px}
+.bar>i{display:block;height:100%;border-radius:4px;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+
+/*══════ BADGES ══════*/
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700}
+.b-green{background:rgba(34,197,138,.16);color:var(--green)}
+.b-amber{background:rgba(245,165,36,.16);color:var(--amber)}
+.b-red{background:rgba(242,73,92,.16);color:var(--red)}
+.b-data{background:rgba(255,255,255,.08);color:var(--text2)}
+.b-role{background:rgba(58,160,255,.14);color:var(--sky)}
+
+/*══════ FORMS / BUTTONS ══════*/
+label.fld{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--text2);font-weight:600}
+input,select,textarea{font-family:Inter;font-size:13px;color:var(--text);background:var(--bg2);
+  border:1px solid var(--border);border-radius:10px;padding:10px 12px;transition:.2s;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(244,130,32,.15)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border-radius:11px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);font-family:Inter;font-weight:600;
+  font-size:13px;cursor:pointer;transition:.2s cubic-bezier(.2,.7,.2,1)}
+.btn:hover{transform:translateY(-2px);border-color:var(--border2)}
+.btn:active{transform:translateY(0)}
+.btn.p{background:linear-gradient(135deg,var(--orange),#d8710f);border-color:transparent;color:#1a0f02;box-shadow:0 6px 18px rgba(244,130,32,.32)}
+.btn.n{background:linear-gradient(135deg,var(--navy),var(--navy-d));border-color:transparent;color:#fff}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:9px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/*══════ LOGIN ══════*/
+.login-scr{min-height:100vh;display:grid;place-items:center;padding:24px;animation:fadeIn .5s both}
+.login-card{width:100%;max-width:410px;background:linear-gradient(180deg,var(--card),var(--card2));
+  border:1px solid var(--border);border-radius:20px;padding:28px 26px;box-shadow:var(--shadow);animation:pop .5s both}
+.login-card .logo{height:52px;margin:0 auto 14px;display:block}
+.seg{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:3px;margin:14px 0}
+.seg button{flex:1;padding:8px;border:none;background:transparent;color:var(--text2);font-family:Inter;
+  font-weight:600;font-size:12px;border-radius:8px;cursor:pointer;transition:.2s}
+.seg button.on{background:var(--navy);color:#fff}
+.hint{font-size:11px;color:var(--text3);margin-top:3px}
+.err{background:rgba(242,73,92,.12);border:1px solid rgba(242,73,92,.4);color:#ffb3bd;
+  padding:9px 12px;border-radius:10px;font-size:12px;margin-top:10px;display:none}
+.err.show{display:block;animation:fadeUp .3s both}
+.conncheck{display:flex;gap:14px;justify-content:center;margin-top:16px;font-size:11px;color:var(--text3)}
+.conncheck b{font-weight:600}
+.led{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:5px;vertical-align:middle}
+.led.ok{background:var(--green);box-shadow:0 0 8px var(--green)}.led.bad{background:var(--red);box-shadow:0 0 8px var(--red)}
+
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;
+  display:inline-block;animation:spin .7s linear infinite}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
+  background:var(--card);border:1px solid var(--border2);padding:11px 18px;border-radius:12px;font-size:13px;
+  font-weight:600;z-index:100;transition:.3s;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast.ok{border-color:rgba(34,197,138,.5)}.toast.bad{border-color:rgba(242,73,92,.5)}
+.modal-bg{position:fixed;inset:0;background:rgba(4,7,14,.68);backdrop-filter:blur(4px);z-index:60;
+  display:none;place-items:center;padding:20px}
+.modal-bg.open{display:grid;animation:fadeIn .25s both}
+.modal{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:linear-gradient(180deg,var(--card),var(--card2));
+  border:1px solid var(--border2);border-radius:18px;padding:22px;animation:pop .35s both}
+.modal h3{margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+.muted{color:var(--text3);font-size:11.5px}
+.pill{display:inline-block;padding:3px 9px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);
+  font-size:11px;color:var(--text2);margin:2px 3px 2px 0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-scr" id="login">
+  <div class="login-card">
+    <img class="logo" src="data:image/png;base64,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" alt="Al Tasnim">
+    <h2 style="text-align:center;font-size:19px">HSE Coverage Tracker</h2>
+    <p style="text-align:center;color:var(--text2);font-size:12px;margin-top:3px" id="login-sub">Nimr Cluster · PDO ODC</p>
+    <div class="seg" id="login-seg">
+      <button data-mode="member" class="on">Advisor / PA / Authorizer</button>
+      <button data-mode="lead">Lead / Admin</button>
+    </div>
+    <div id="member-login">
+      <label class="fld">Your name
+        <select id="li-name"><option value="">Loading roster…</option></select>
+      </label>
+    </div>
+    <div id="lead-login" class="hidden">
+      <label class="fld">User ID <input id="li-uid" placeholder="admin  or  nimr-lead" autocomplete="username"></label>
+    </div>
+    <label class="fld" style="margin-top:10px">PIN
+      <input id="li-pin" type="password" inputmode="numeric" placeholder="••••" autocomplete="current-password">
+    </label>
+    <div class="err" id="li-err"></div>
+    <button class="btn p" style="width:100%;margin-top:14px" id="li-btn" onclick="doLogin()">Sign in</button>
+    <div style="text-align:center;margin-top:12px">
+      <a style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:600" onclick="openOpenAdd()">+ Add a Permit Holder (no login)</a>
+    </div>
+    <div class="conncheck" id="conncheck">
+      <span><span class="led" id="led-read"></span><b>Data read</b></span>
+      <span><span class="led" id="led-write"></span><b>API</b></span>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <img class="logo" src="data:image/png;base64,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" alt="Al Tasnim">
+    <div class="brand"><b>HSE Coverage Tracker</b><span id="brand-sub">Nimr Cluster</span></div>
+    <div class="tb-spacer"></div>
+    <div class="chip on" id="user-chip">—</div>
+    <div class="icon-btn" title="Refresh" onclick="refreshAll(true)">⟳</div>
+    <div class="icon-btn" title="Sign out" onclick="logout()">⏻</div>
+  </div>
+  <div class="wrap">
+    <div class="nav" id="nav"></div>
+
+    <!-- MY PERFORMANCE -->
+    <div class="panel" id="p-me">
+      <div class="grid g2" style="align-items:stretch">
+        <div class="card reveal" style="display:flex;gap:18px;align-items:center">
+          <div class="ring" id="me-ring"><div class="rv" id="me-ring-v">0</div><div class="rs">PRISM</div></div>
+          <div>
+            <div class="muted">Your score this month</div>
+            <div style="font-family:'Space Grotesk';font-size:19px;font-weight:600" id="me-name">—</div>
+            <div class="muted" id="me-rank">—</div>
+          </div>
+        </div>
+        <div class="card reveal">
+          <div class="section-title"><span class="dot"></span>Coverage snapshot</div>
+          <div id="me-snap" class="grid g3"></div>
+        </div>
+      </div>
+      <div class="card reveal" style="margin-top:14px">
+        <div class="section-title"><span class="dot"></span>KPI breakdown</div>
+        <div style="overflow:auto"><table><thead><tr><th>KPI</th><th>Type</th><th>Actual</th><th>Target</th><th>Score</th><th>Status</th></tr></thead><tbody id="me-kpi"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- LOG VISIT -->
+    <div class="panel" id="p-log">
+      <div class="card reveal" style="max-width:640px">
+        <div class="section-title"><span class="dot"></span>Log a site visit</div>
+        <div class="row"><label class="fld">Date<input type="date" id="v-date"></label>
+          <label class="fld">Worksite / Location<input id="v-loc" list="loc-list" placeholder="e.g. Well 29122"></label></div>
+        <datalist id="loc-list"></datalist>
+        <div class="row" style="margin-top:10px"><label class="fld">Permit (optional)<select id="v-permit"><option value="">— none —</option></select></label>
+          <label class="fld">Permit Holder<input id="v-ph" list="ph-list" placeholder="PH name"></label></div>
+        <datalist id="ph-list"></datalist>
+        <div class="row" style="margin-top:10px">
+          <label class="fld">PTW<select id="v-ptw"><option>Yes</option><option>No</option><option>N/A</option></select></label>
+          <label class="fld">TBT<select id="v-tbt"><option>Yes</option><option>No</option><option>N/A</option></select></label>
+          <label class="fld">PPE<select id="v-ppe"><option>Yes</option><option>No</option><option>N/A</option></select></label>
+          <label class="fld">Risk<select id="v-risk"><option>Low</option><option>Medium</option><option>High</option></select></label>
+        </div>
+        <div class="row" style="margin-top:10px"><label class="fld">Safe observations (comma-sep)<input id="v-safe"></label>
+          <label class="fld">Unsafe observations (comma-sep)<input id="v-unsafe"></label></div>
+        <div class="row" style="margin-top:10px"><label class="fld">Actions taken<input id="v-act"></label>
+          <label class="fld">Recommendations<input id="v-rec"></label></div>
+        <label class="fld" style="margin-top:10px">Remarks<textarea id="v-rem" rows="2"></textarea></label>
+        <button class="btn p" style="margin-top:14px" id="v-btn" onclick="submitVisit()">Log visit</button>
+      </div>
+    </div>
+
+    <!-- WORKLOAD (PA/AA) -->
+    <div class="panel" id="p-work">
+      <div class="grid g4" id="work-kpi"></div>
+      <div class="card reveal" style="margin-top:14px">
+        <div class="section-title"><span class="dot"></span>My active permits &amp; worksite coverage
+          <button class="btn sm" style="margin-left:auto" onclick="openPermit()">+ Add permit</button></div>
+        <div style="overflow:auto"><table><thead><tr><th>Permit No</th><th>Class</th><th>PH</th><th>Location</th><th>Valid to</th><th>Last visit</th><th>Status</th></tr></thead><tbody id="work-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- RANKINGS -->
+    <div class="panel" id="p-rank">
+      <div class="card reveal">
+        <div class="section-title"><span class="dot"></span>Coverage rankings
+          <select id="rank-role" onchange="renderRank()" style="margin-left:auto;max-width:200px">
+            <option value="hsea">HSE Advisors</option><option value="pa">Permit Applicants</option><option value="authorizer">Permit Authorizers</option>
+          </select></div>
+        <div style="overflow:auto"><table><thead><tr><th>#</th><th>Name</th><th>PRISM</th><th></th><th>Coverage</th><th>Visits</th></tr></thead><tbody id="rank-tbody"></tbody></table></div>
+        <p class="muted" style="margin-top:8px">Ranked on normalized PRISM score (Actual ÷ Target, capped). Each cluster's targets are visible on the KPI breakdown — comparisons across clusters use the same normalized scale.</p>
+      </div>
+    </div>
+
+    <!-- GAP -->
+    <div class="panel" id="p-gap">
+      <div class="card reveal">
+        <div class="section-title"><span class="dot"></span>Gap analysis &amp; development plans
+          <select id="gap-role" onchange="renderGap()" style="margin-left:auto;max-width:200px">
+            <option value="hsea">HSE Advisors</option><option value="pa">Permit Applicants</option><option value="authorizer">Permit Authorizers</option>
+          </select></div>
+        <p class="muted" style="margin-bottom:10px">🔴 Performance gap (gets a plan) · 🟡 Review target · ⚪ Data gap (attribute visits / enter KPI). Only performance gaps generate development plans.</p>
+        <div id="gap-list"></div>
+      </div>
+    </div>
+
+    <!-- LEAD -->
+    <div class="panel" id="p-lead">
+      <div class="nav" style="margin-bottom:14px">
+        <div class="nav-btn active" data-sub="roster" onclick="leadTab('roster',this)">👥 Roster</div>
+        <div class="nav-btn" data-sub="pins" onclick="leadTab('pins',this)">🔑 Reset PINs</div>
+        <div class="nav-btn" data-sub="kpi" onclick="leadTab('kpi',this)">📐 KPI Config</div>
+        <div class="nav-btn" data-sub="actuals" onclick="leadTab('actuals',this)">✍️ KPI Actuals</div>
+      </div>
+      <div class="card reveal" id="lead-roster">
+        <div class="section-title"><span class="dot"></span>Team roster
+          <button class="btn sm" style="margin-left:auto" onclick="openMember()">+ Add person</button></div>
+        <div style="overflow:auto"><table><thead><tr><th>Name</th><th>Role</th><th>Shift</th><th>Login</th><th></th></tr></thead><tbody id="roster-tbody"></tbody></table></div>
+      </div>
+      <div class="card reveal hidden" id="lead-pins">
+        <div class="section-title"><span class="dot"></span>Create / reset a login PIN</div>
+        <div class="row" style="max-width:520px">
+          <label class="fld">Person<select id="pin-user"></select></label>
+          <label class="fld">New PIN<input id="pin-val" inputmode="numeric" placeholder="4–6 digits"></label>
+        </div>
+        <button class="btn n sm" style="margin-top:12px" onclick="doSetPin()">Set PIN</button>
+        <p class="muted" style="margin-top:8px">Sets or resets this person's PIN. They sign in by picking their name + this PIN.</p>
+      </div>
+      <div class="card reveal hidden" id="lead-kpi">
+        <div class="section-title"><span class="dot"></span>KPI configuration
+          <select id="kpi-role" onchange="renderKpiCfg()" style="margin-left:auto;max-width:200px">
+            <option value="hsea">HSE Advisors</option><option value="pa">Permit Applicants</option><option value="authorizer">Permit Authorizers</option></select>
+          <button class="btn sm" onclick="openKpi()">+ Add KPI</button></div>
+        <div style="overflow:auto"><table><thead><tr><th>KPI</th><th>Type</th><th>Metric</th><th>Weight</th><th>Target</th><th>Freq</th><th>On</th><th></th></tr></thead><tbody id="kpicfg-tbody"></tbody></table></div>
+        <p class="muted" style="margin-top:8px">Auto KPIs compute from logged data. Manual KPIs need actuals entered per person (KPI Actuals tab).</p>
+      </div>
+      <div class="card reveal hidden" id="lead-actuals">
+        <div class="section-title"><span class="dot"></span>Enter manual KPI actuals</div>
+        <div class="row" style="max-width:640px">
+          <label class="fld">Person<select id="act-user" onchange="renderActuals()"></select></label>
+          <label class="fld">Month<input type="month" id="act-month" onchange="renderActuals()"></label>
+        </div>
+        <div id="act-list" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- generic modal -->
+<div class="modal-bg" id="modal"><div class="modal" id="modal-inner"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/*════════════════════ CONFIG ════════════════════*/
+const WEB_APP_URL = 'https://script.google.com/a/macros/altasnim.com/s/AKfycbwuOkOw9TxE9GfgIEK0uzqzLM56BwDCP_nkEbotmYOsTA0rOLpDz8C-xclGGh12XM-szw/exec';
+const PUB_ID      = '18TagiJGg0CEtCZoEStMwLr1RoDuAoJ9C6JkWzHnSrXw';
+const CLUSTER     = 'NIMR';
+const CSV = tab => `https://docs.google.com/spreadsheets/d/${PUB_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}&t=${Date.now()}`;
+
+/*════════════════════ STATE ════════════════════*/
+let ME=null;                 // {token, role, name, userId, cluster}
+let ROSTER=[],PERMITS=[],VISITS=[],PH=[],KPICFG=[],KACT=[],CLUSTERS_META=[];
+let MONTH=new Date().toISOString().slice(0,7);
+
+/*════════════════════ CSV + IO ════════════════════*/
+function parseCSV(text){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else{ if(c==='"')q=true; else if(c===','){row.push(cur);cur='';} else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';} else if(c==='\r'){} else cur+=c; }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+async function readTab(tab){
+  const res=await fetch(CSV(tab));
+  if(!res.ok) throw new Error('read '+tab+' '+res.status);
+  const rows=parseCSV(await res.text());
+  if(!rows.length) return [];
+  const H=rows[0].map(h=>h.trim());
+  return rows.slice(1).filter(r=>r.some(c=>c!=='')).map(r=>{const o={};H.forEach((h,i)=>o[h]=(r[i]!==undefined?r[i]:''));return o;});
+}
+async function api(action,payload){
+  const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(Object.assign({action},payload||{})),redirect:'follow'});
+  const t=await res.text();
+  let j;try{j=JSON.parse(t);}catch(e){throw new Error('Bad response (check web-app access = Anyone). '+t.slice(0,80));}
+  if(!j.ok&&j.error) throw new Error(j.error);
+  return j;
+}
+
+/*════════════════════ CONNECTION CHECK ════════════════════*/
+async function connCheck(){
+  const rd=document.getElementById('led-read'), wr=document.getElementById('led-write');
+  try{ await readTab('Clusters'); rd.className='led ok'; }catch(e){ rd.className='led bad'; }
+  try{ await api('ping',{}); wr.className='led ok'; }catch(e){ wr.className='led bad'; }
+}
+
+/*════════════════════ LOGIN ════════════════════*/
+let LOGIN_MODE='member';
+document.querySelectorAll('#login-seg button').forEach(b=>b.onclick=()=>{
+  LOGIN_MODE=b.dataset.mode;
+  document.querySelectorAll('#login-seg button').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('member-login').classList.toggle('hidden',LOGIN_MODE!=='member');
+  document.getElementById('lead-login').classList.toggle('hidden',LOGIN_MODE!=='lead');
+});
+async function loadRosterForLogin(){
+  try{
+    const r=await readTab(CLUSTER+'_Roster');
+    const sel=document.getElementById('li-name');
+    const act=r.filter(x=>String(x.active)!=='false'&&x.name);
+    sel.innerHTML='<option value="">Select your name…</option>'+
+      act.map(x=>`<option value="${x.id}" data-role="${x.role}">${x.name} · ${roleShort(x.role)}</option>`).join('');
+  }catch(e){ document.getElementById('li-name').innerHTML='<option>Roster unavailable</option>'; }
+}
+async function doLogin(){
+  const err=document.getElementById('li-err'); err.classList.remove('show');
+  const pin=document.getElementById('li-pin').value.trim();
+  const btn=document.getElementById('li-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  try{
+    let userId,cluster=CLUSTER;
+    if(LOGIN_MODE==='member'){
+      const sel=document.getElementById('li-name'); userId=sel.value;
+      if(!userId) throw new Error('Select your name');
+    }else{
+      userId=document.getElementById('li-uid').value.trim();
+      if(userId==='admin') cluster='ALL';
+    }
+    const r=await api('login',{userId,pin,cluster});
+    ME={token:r.token,role:r.role,name:r.name,userId,cluster:r.cluster};
+    enterApp();
+  }catch(e){ err.textContent=e.message; err.classList.add('show'); }
+  btn.disabled=false; btn.textContent='Sign in';
+}
+function logout(){ ME=null; document.getElementById('app').classList.add('hidden'); document.getElementById('login').classList.remove('hidden'); }
+
+/*════════════════════ APP BOOT ════════════════════*/
+const NAV = {
+  hsea:[['me','My Performance','📊'],['log','Log Visit','📍'],['rank','Rankings','🏆'],['gap','Gap Analysis','🎯']],
+  pa:[['me','My Performance','📊'],['work','My Workload','🗂️'],['log','Log Visit','📍'],['gap','My Gaps','🎯']],
+  authorizer:[['me','My Performance','📊'],['work','My Workload','🗂️'],['log','Log Visit','📍'],['gap','My Gaps','🎯']],
+  lead:[['rank','Rankings','🏆'],['gap','Gap Analysis','🎯'],['log','Log Visit','📍'],['lead','Manage','⚙️']],
+  admin:[['rank','Rankings','🏆'],['gap','Gap Analysis','🎯'],['lead','Manage','⚙️']]
+};
+async function enterApp(){
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-chip').textContent=ME.name+' · '+roleShort(ME.role);
+  const nav=document.getElementById('nav'); const items=NAV[ME.role]||NAV.hsea;
+  nav.innerHTML=items.map((it,i)=>`<div class="nav-btn${i===0?' active':''}" onclick="go('${it[0]}',this)"><span>${it[2]}</span><span>${it[1]}</span></div>`).join('');
+  await refreshAll(false);
+  go(items[0][0]);
+}
+function go(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const p=document.getElementById('p-'+id); if(p)p.classList.add('active');
+  if(el){document.querySelectorAll('#nav .nav-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+  if(id==='me')renderMe(); if(id==='work')renderWork(); if(id==='rank')renderRank();
+  if(id==='gap')renderGap(); if(id==='log')prepLog(); if(id==='lead')renderLead();
+}
+async function refreshAll(toast){
+  try{
+    [ROSTER,PERMITS,VISITS,PH,KPICFG,KACT,CLUSTERS_META]=await Promise.all([
+      readTab(CLUSTER+'_Roster'),readTab(CLUSTER+'_Permits'),readTab(CLUSTER+'_Visits'),
+      readTab(CLUSTER+'_PH'),readTab('KPI_Config'),readTab('KPI_Actuals'),readTab('Clusters')]);
+    KPICFG=KPICFG.filter(k=>k.cluster===CLUSTER);
+    const cm=CLUSTERS_META.find(c=>c.cluster===CLUSTER); if(cm)document.getElementById('brand-sub').textContent=cm.displayName+' Cluster';
+    const active=document.querySelector('.panel.active'); if(active)go(active.id.slice(2));
+    if(toast)showToast('Refreshed','ok');
+  }catch(e){ showToast('Read failed: '+e.message,'bad'); }
+}
+
+/*════════════════════ PRISM ENGINE ════════════════════*/
+function roleShort(r){return {hsea:'HSEA',pa:'Applicant',authorizer:'Authorizer',lead:'Lead',admin:'Admin'}[r]||r;}
+function siteKey(s){return String(s||'').trim().toLowerCase();}
+function activePermits(role,userId){
+  if(role==='hsea') return PERMITS.filter(p=>String(p.status)!=='closed');
+  return PERMITS.filter(p=>p.ownerId===userId&&String(p.status)!=='closed');
+}
+function myVisits(userId,month){return VISITS.filter(v=>v.visitorId===userId&&(!month||String(v.date).slice(0,7)===month));}
+function isHighRisk(p){return /high|hot|critical|hr\b/i.test(String(p.permitClass)+' '+String(p.activityDesc));}
+function computeAuto(metric,role,userId,month){
+  const perms=activePermits(role,userId);
+  const sites=[...new Set(perms.map(p=>siteKey(p.location)).filter(Boolean))];
+  const vis=myVisits(userId,month);
+  const visited=new Set(vis.map(v=>siteKey(v.location)).filter(Boolean));
+  if(metric==='coverage_pct'){ if(!sites.length) return role==='hsea'?0:100; return Math.round(sites.filter(s=>visited.has(s)).length/sites.length*100); }
+  if(metric==='visit_count') return vis.length;
+  if(metric==='highrisk_visit_rate'){ const hr=perms.filter(isHighRisk); if(!hr.length) return 100;
+    const hs=[...new Set(hr.map(p=>siteKey(p.location)).filter(Boolean))]; if(!hs.length)return 100;
+    return Math.round(hs.filter(s=>visited.has(s)).length/hs.length*100); }
+  if(metric==='unsafe_closeout'){ const u=vis.filter(v=>String(v.unsafeObs).trim()); if(!u.length)return 100;
+    return Math.round(u.filter(v=>String(v.actionsTaken).trim()).length/u.length*100); }
+  if(metric==='days_since_last'){ if(!sites.length)return 0;
+    const end=new Date(month+'-28'); let tot=0,n=0;
+    sites.forEach(s=>{ const dts=VISITS.filter(v=>v.visitorId===userId&&siteKey(v.location)===s&&v.date).map(v=>new Date(v.date));
+      let d=60; if(dts.length){const last=new Date(Math.max.apply(null,dts));d=Math.max(0,Math.round((end-last)/864e5));} tot+=d;n++; });
+    return n?Math.round(tot/n):60; }
+  return 0;
+}
+function kpiActual(kpi,userId){
+  if(kpi.type==='auto') return {actual:computeAuto(kpi.autoMetric,kpiRole(kpi),userId,MONTH),has:true};
+  const a=KACT.find(x=>x.cluster===CLUSTER&&x.userId===userId&&x.kpiKey===kpi.kpiKey&&x.month===MONTH);
+  return a?{actual:Number(a.actual)||0,has:true}:{actual:null,has:false};
+}
+function kpiRole(kpi){return kpi.role;}
+function scoreKpi(kpi,userId){
+  const t=Number(kpi.target)||0,w=Number(kpi.weight)||0;
+  const av=kpiActual(kpi,userId);
+  if(!av.has||av.actual===null) return {points:0,status:'data',actual:null,ratio:0,weight:w,target:t};
+  const lower=kpi.autoMetric==='days_since_last';
+  let ratio= lower ? (av.actual>0?Math.min(t/av.actual,1):1) : (t>0?Math.min(av.actual/t,1):0);
+  const status = ratio>=0.85?'green':ratio>=0.6?'amber':'red';
+  return {points:ratio*w,status,actual:av.actual,ratio,weight:w,target:t};
+}
+function prism(role,userId){
+  const kpis=KPICFG.filter(k=>k.role===role&&String(k.active)!=='false');
+  let pts=0,wt=0;const rows=[];
+  kpis.forEach(k=>{const s=scoreKpi(k,userId);pts+=s.points;wt+=s.weight;rows.push({kpi:k,s});});
+  return {pct:wt?Math.round(pts/wt*100):0,pts:Math.round(pts*10)/10,wt,rows};
+}
+function rosterOf(role){return ROSTER.filter(r=>r.role===role&&String(r.active)!=='false');}
+
+/*════════════════════ RENDER: MY PERFORMANCE ════════════════════*/
+function renderMe(){
+  const role=ME.role==='lead'||ME.role==='admin'?'hsea':ME.role;
+  const P=prism(role,ME.userId);
+  document.getElementById('me-name').textContent=ME.name;
+  const ring=document.getElementById('me-ring');
+  const col=P.pct>=85?'var(--green)':P.pct>=60?'var(--amber)':'var(--red)';
+  ring.style.setProperty('--c',col);
+  animRing(ring,'me-ring-v',P.pct);
+  // rank
+  const board=rosterOf(role).map(r=>({name:r.name,uid:r.id,pct:prism(role,r.id).pct})).sort((a,b)=>b.pct-a.pct);
+  const myPos=board.findIndex(b=>b.uid===ME.userId);
+  document.getElementById('me-rank').textContent=myPos>=0?`Rank ${myPos+1} of ${board.length} · ${roleShort(role)}`:roleShort(role);
+  // snapshot (auto metrics)
+  const cov=computeAuto('coverage_pct',role,ME.userId,MONTH), vc=computeAuto('visit_count',role,ME.userId,MONTH), rc=computeAuto('days_since_last',role,ME.userId,MONTH);
+  document.getElementById('me-snap').innerHTML=snap('Coverage',cov+'%')+snap('Visits',vc)+snap('Avg recency',rc+'d');
+  // kpi table
+  document.getElementById('me-kpi').innerHTML=P.rows.map(r=>{
+    const s=r.s, a=s.actual===null?'—':s.actual;
+    return `<tr><td>${r.kpi.kpiName}</td><td><span class="badge ${r.kpi.type==='auto'?'b-role':'b-data'}">${r.kpi.type}</span></td>
+      <td class="num">${a}</td><td class="num">${s.target}</td><td class="num">${Math.round(s.points*10)/10}/${s.weight}</td>
+      <td>${statusBadge(s.status)}</td></tr>`;}).join('')||'<tr><td colspan=6 class=muted>No KPIs configured.</td></tr>';
+}
+function snap(l,v){return `<div class="card" style="padding:12px"><div class="lbl" style="font-size:10px;color:var(--text3)">${l}</div><div class="num" style="font-size:24px">${v}</div></div>`;}
+function statusBadge(s){return {green:'<span class="badge b-green">On target</span>',amber:'<span class="badge b-amber">Review</span>',red:'<span class="badge b-red">Gap</span>',data:'<span class="badge b-data">No data</span>'}[s];}
+function animRing(ring,vid,pct){let c=0;const el=document.getElementById(vid);const step=()=>{c+=Math.max(1,Math.round((pct-c)/6));if(c>=pct)c=pct;ring.style.setProperty('--p',c);el.textContent=c;if(c<pct)requestAnimationFrame(step);};step();}
+
+/*════════════════════ RENDER: WORKLOAD ════════════════════*/
+function renderWork(){
+  const role=ME.role; const perms=activePermits(role,ME.userId);
+  const cov=computeAuto('coverage_pct',role,ME.userId,MONTH);
+  const hr=perms.filter(isHighRisk).length;
+  document.getElementById('work-kpi').innerHTML=[
+    kcard('Active permits',perms.length),kcard('Worksite coverage',cov+'%'),
+    kcard('High-risk permits',hr),kcard('Visits this month',computeAuto('visit_count',role,ME.userId,MONTH))
+  ].join('');
+  const end=new Date(MONTH+'-28');
+  document.getElementById('work-tbody').innerHTML=perms.map(p=>{
+    const dts=VISITS.filter(v=>v.visitorId===ME.userId&&siteKey(v.location)===siteKey(p.location)&&v.date).map(v=>new Date(v.date));
+    const last=dts.length?new Date(Math.max.apply(null,dts)):null;
+    const days=last?Math.round((end-last)/864e5):null;
+    const cstat=last&&days<=7?'<span class="badge b-green">Recent</span>':last?'<span class="badge b-amber">'+days+'d ago</span>':'<span class="badge b-red">Never</span>';
+    return `<tr><td>${p.permitNo||'—'}</td><td>${p.permitClass||'—'}${isHighRisk(p)?' 🔴':''}</td><td>${p.phName||'—'}</td>
+      <td>${p.location||'—'}</td><td>${p.validTo||'—'}</td><td>${last?last.toISOString().slice(0,10):'—'}</td><td>${cstat}</td></tr>`;
+  }).join('')||'<tr><td colspan=7 class=muted>No active permits. Add your permits to anchor coverage.</td></tr>';
+}
+function kcard(l,v){return `<div class="card kpi reveal"><div class="lbl">${l}</div><div class="val">${v}</div></div>`;}
+
+/*════════════════════ RENDER: RANKINGS ════════════════════*/
+function renderRank(){
+  const role=document.getElementById('rank-role').value;
+  const board=rosterOf(role).map(r=>{const P=prism(role,r.id);return {name:r.name,uid:r.id,P,
+    cov:computeAuto('coverage_pct',role,r.id,MONTH),vc:computeAuto('visit_count',role,r.id,MONTH)};}).sort((a,b)=>b.P.pct-a.P.pct);
+  document.getElementById('rank-tbody').innerHTML=board.map((b,i)=>{
+    const col=b.P.pct>=85?'var(--green)':b.P.pct>=60?'var(--amber)':'var(--red)';
+    return `<tr><td class="rankno">${i+1}</td><td>${b.name}${b.uid===ME.userId?' <span class="badge b-role">you</span>':''}</td>
+      <td class="num" style="color:${col}">${b.P.pct}%</td>
+      <td><div class="bar"><i style="width:${b.P.pct}%;background:${col}"></i></div></td>
+      <td class="num">${b.cov}%</td><td class="num">${b.vc}</td></tr>`;}).join('')||'<tr><td colspan=6 class=muted>No one in this role yet.</td></tr>';
+}
+
+/*════════════════════ RENDER: GAP ════════════════════*/
+function renderGap(){
+  const single=(ME.role==='pa'||ME.role==='authorizer');
+  const role=single?ME.role:document.getElementById('gap-role').value;
+  document.getElementById('gap-role').parentElement.style.display=single?'none':'';
+  const people=single?[{id:ME.userId,name:ME.name}]:rosterOf(role);
+  document.getElementById('gap-list').innerHTML=people.map(pn=>{
+    const P=prism(role,pn.id);
+    const gaps=P.rows.filter(r=>r.s.status==='red'), amb=P.rows.filter(r=>r.s.status==='amber'), dat=P.rows.filter(r=>r.s.status==='data');
+    if(!gaps.length&&!amb.length&&!dat.length&&!single) return '';
+    return `<div class="card" style="margin-bottom:10px"><div style="display:flex;align-items:center;gap:10px">
+      <b style="font-family:Space Grotesk">${pn.name}</b><span class="badge ${P.pct>=85?'b-green':P.pct>=60?'b-amber':'b-red'}">${P.pct}%</span>
+      <span class="muted" style="margin-left:auto">${gaps.length}🔴 ${amb.length}🟡 ${dat.length}⚪</span></div>
+      ${gaps.map(r=>`<div style="margin-top:8px;padding:10px;border-left:3px solid var(--red);background:rgba(242,73,92,.07);border-radius:8px">
+        <b style="font-size:12.5px">🔴 ${r.kpi.kpiName}</b> <span class="muted">— actual ${r.s.actual} vs target ${r.s.target}</span>
+        <div style="font-size:12px;margin-top:4px;color:var(--text2)">${devPlan(r.kpi,r.s,pn.id)}</div></div>`).join('')}
+      ${amb.map(r=>`<div style="margin-top:6px;font-size:12px;color:var(--amber)">🟡 ${r.kpi.kpiName}: ${r.s.actual}/${r.s.target} — Lead to review target.</div>`).join('')}
+      ${dat.map(r=>`<div style="margin-top:6px;font-size:12px;color:var(--text3)">⚪ ${r.kpi.kpiName}: no data — ${r.kpi.type==='manual'?'Lead to enter actual':'attribute visits'}.</div>`).join('')}
+    </div>`;}).join('')||'<p class="muted">No gaps — everyone on target. 🎉</p>';
+}
+function devPlan(kpi,s,userId){
+  if(kpi.autoMetric==='coverage_pct'){const perms=activePermits(kpi.role,userId);const vis=new Set(myVisits(userId,MONTH).map(v=>siteKey(v.location)));
+    const missed=[...new Set(perms.map(p=>p.location).filter(l=>l&&!vis.has(siteKey(l))))].slice(0,6);
+    return 'Plan: visit the un-covered worksites — '+(missed.join(', ')||'none pending')+'.';}
+  if(kpi.autoMetric==='days_since_last') return 'Plan: re-visit sites not seen in over '+kpi.target+' days to restore recency.';
+  if(kpi.autoMetric==='highrisk_visit_rate') return 'Plan: prioritise physical checks on high-risk permits this week.';
+  if(kpi.autoMetric==='visit_count') return 'Plan: raise visit frequency to reach '+kpi.target+' this period.';
+  if(kpi.autoMetric==='unsafe_closeout') return 'Plan: log corrective actions for every unsafe observation raised.';
+  return 'Plan: agree a support action with the HSE Lead to reach target '+kpi.target+'.';
+}
+
+/*════════════════════ LOG VISIT ════════════════════*/
+function prepLog(){
+  document.getElementById('v-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('loc-list').innerHTML=[...new Set([...PERMITS.map(p=>p.location),...PH.map(p=>p.location)].filter(Boolean))].map(l=>`<option value="${l}">`).join('');
+  document.getElementById('ph-list').innerHTML=PH.map(p=>`<option value="${p.name}">`).join('');
+  const mine=ME.role==='pa'||ME.role==='authorizer'?activePermits(ME.role,ME.userId):PERMITS;
+  document.getElementById('v-permit').innerHTML='<option value="">— none —</option>'+mine.map(p=>`<option value="${p.id}" data-loc="${p.location||''}" data-ph="${p.phName||''}">${p.permitNo||p.id} · ${p.location||''}</option>`).join('');
+}
+document.getElementById('v-permit')&&(document.getElementById('v-permit').onchange=function(){const o=this.selectedOptions[0];if(o&&o.dataset.loc)document.getElementById('v-loc').value=o.dataset.loc;if(o&&o.dataset.ph)document.getElementById('v-ph').value=o.dataset.ph;});
+async function submitVisit(){
+  const btn=document.getElementById('v-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+  try{
+    const visit={date:document.getElementById('v-date').value,location:document.getElementById('v-loc').value.trim(),
+      permitId:document.getElementById('v-permit').value,phName:document.getElementById('v-ph').value.trim(),
+      ptw:val('v-ptw'),tbt:val('v-tbt'),ppe:val('v-ppe'),risk:val('v-risk'),
+      safeObs:splt('v-safe'),unsafeObs:splt('v-unsafe'),actionsTaken:splt('v-act'),recommendations:splt('v-rec'),
+      remarks:document.getElementById('v-rem').value.trim(),
+      visitorRole:ME.role,visitorId:ME.userId,visitorName:ME.name};
+    if(!visit.location){throw new Error('Worksite/location is required');}
+    await api('addVisit',{token:ME.token,cluster:CLUSTER,visit});
+    showToast('Visit logged','ok');
+    ['v-loc','v-ph','v-safe','v-unsafe','v-act','v-rec','v-rem'].forEach(id=>document.getElementById(id).value='');
+    await refreshAll(false);
+  }catch(e){showToast(e.message,'bad');}
+  btn.disabled=false;btn.textContent='Log visit';
+}
+function val(id){return document.getElementById(id).value;}
+function splt(id){return document.getElementById(id).value.split(',').map(s=>s.trim()).filter(Boolean);}
+
+/*════════════════════ LEAD PANEL ════════════════════*/
+function renderLead(){leadTab('roster',document.querySelector('#p-lead .nav-btn'));}
+function leadTab(t,el){
+  ['roster','pins','kpi','actuals'].forEach(x=>document.getElementById('lead-'+x).classList.toggle('hidden',x!==t));
+  if(el){document.querySelectorAll('#p-lead .nav-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+  if(t==='roster')renderRoster(); if(t==='pins')renderPinUsers(); if(t==='kpi')renderKpiCfg(); if(t==='actuals')renderActualsUsers();
+}
+function renderRoster(){
+  document.getElementById('roster-tbody').innerHTML=ROSTER.filter(r=>String(r.active)!=='false').map(r=>
+    `<tr><td>${r.name}</td><td><span class="badge b-role">${roleShort(r.role)}</span></td><td>${r.shift||'—'}</td>
+     <td>${r.id}</td><td style="text-align:right"><button class="btn sm" onclick="rosterOff('${r.id}')">Remove</button></td></tr>`).join('')
+    ||'<tr><td colspan=5 class=muted>No team members yet.</td></tr>';
+}
+function openMember(){
+  modal(`<h3>Add team member</h3>
+   <label class="fld">Name<input id="m-name"></label>
+   <div class="row" style="margin-top:10px">
+     <label class="fld">Role<select id="m-role"><option value="hsea">HSE Advisor</option><option value="pa">Permit Applicant</option><option value="authorizer">Permit Authorizer</option></select></label>
+     <label class="fld">Shift<input id="m-shift" placeholder="Common / A / B"></label></div>
+   <label class="fld" style="margin-top:10px">Initial login PIN<input id="m-pin" placeholder="4–6 digits"></label>
+   <button class="btn p" style="margin-top:14px" onclick="saveMember()">Add &amp; create login</button>`);
+}
+async function saveMember(){
+  try{
+    const name=document.getElementById('m-name').value.trim(),role=document.getElementById('m-role').value,
+      shift=document.getElementById('m-shift').value.trim(),pin=document.getElementById('m-pin').value.trim();
+    if(!name)throw new Error('Name required');
+    const r=await api('rosterUpsert',{token:ME.token,cluster:CLUSTER,member:{name,role,shift,active:true}});
+    if(pin) await api('setPin',{token:ME.token,cluster:CLUSTER,userId:r.id,role,name,pin});
+    closeModal();showToast('Member added','ok');await refreshAll(false);renderRoster();
+  }catch(e){showToast(e.message,'bad');}
+}
+async function rosterOff(id){ if(!confirm('Remove this person?'))return;
+  try{await api('rosterRemove',{token:ME.token,cluster:CLUSTER,id});showToast('Removed','ok');await refreshAll(false);renderRoster();}catch(e){showToast(e.message,'bad');}}
+function renderPinUsers(){
+  document.getElementById('pin-user').innerHTML=ROSTER.filter(r=>String(r.active)!=='false').map(r=>`<option value="${r.id}" data-role="${r.role}" data-name="${r.name}">${r.name} · ${roleShort(r.role)}</option>`).join('');
+}
+async function doSetPin(){
+  try{
+    const sel=document.getElementById('pin-user').selectedOptions[0]; if(!sel)throw new Error('Pick a person');
+    const pin=document.getElementById('pin-val').value.trim(); if(pin.length<4)throw new Error('PIN ≥ 4 digits');
+    await api('setPin',{token:ME.token,cluster:CLUSTER,userId:sel.value,role:sel.dataset.role,name:sel.dataset.name,pin});
+    document.getElementById('pin-val').value='';showToast('PIN set for '+sel.dataset.name,'ok');
+  }catch(e){showToast(e.message,'bad');}
+}
+function renderKpiCfg(){
+  const role=document.getElementById('kpi-role').value;
+  document.getElementById('kpicfg-tbody').innerHTML=KPICFG.filter(k=>k.role===role).map(k=>
+    `<tr><td>${k.kpiName}</td><td>${k.type}</td><td>${k.autoMetric||'—'}</td><td class="num">${k.weight}</td>
+     <td class="num">${k.target}</td><td>${k.frequency}</td><td>${String(k.active)!=='false'?'✓':'—'}</td>
+     <td style="text-align:right"><button class="btn sm" onclick='editKpi(${JSON.stringify(k)})'>Edit</button></td></tr>`).join('')
+    ||'<tr><td colspan=8 class=muted>No KPIs for this role.</td></tr>';
+}
+function openKpi(){editKpi({role:document.getElementById('kpi-role').value,type:'manual',weight:10,target:5,frequency:'monthly',active:true});}
+function editKpi(k){
+  modal(`<h3>${k.id?'Edit':'Add'} KPI</h3>
+   <label class="fld">Name<input id="k-name" value="${k.kpiName||''}"></label>
+   <div class="row" style="margin-top:10px">
+     <label class="fld">Type<select id="k-type" onchange="document.getElementById('k-metric').parentElement.style.opacity=this.value==='auto'?1:.4">
+       <option value="auto"${k.type==='auto'?' selected':''}>auto</option><option value="manual"${k.type!=='auto'?' selected':''}>manual</option></select></label>
+     <label class="fld">Auto metric<select id="k-metric">
+       ${['coverage_pct','visit_count','highrisk_visit_rate','days_since_last','unsafe_closeout'].map(m=>`<option ${k.autoMetric===m?'selected':''}>${m}</option>`).join('')}</select></label></div>
+   <div class="row" style="margin-top:10px">
+     <label class="fld">Weight<input id="k-weight" type="number" value="${k.weight||0}"></label>
+     <label class="fld">Target<input id="k-target" type="number" value="${k.target||0}"></label>
+     <label class="fld">Frequency<select id="k-freq"><option ${k.frequency==='monthly'?'selected':''}>monthly</option><option ${k.frequency==='weekly'?'selected':''}>weekly</option></select></label></div>
+   <label class="fld" style="margin-top:10px;flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="k-active" style="width:auto" ${String(k.active)!=='false'?'checked':''}> Active</label>
+   <button class="btn p" style="margin-top:14px" onclick='saveKpi("${k.id||''}","${k.role}","${k.kpiKey||''}")'>Save KPI</button>`);
+}
+async function saveKpi(id,role,kpiKey){
+  try{
+    const kpi={id,role,kpiKey,kpiName:val('k-name'),type:val('k-type'),autoMetric:val('k-type')==='auto'?val('k-metric'):'',
+      weight:Number(val('k-weight')),target:Number(val('k-target')),frequency:val('k-freq'),active:document.getElementById('k-active').checked};
+    if(!kpi.kpiName)throw new Error('Name required');
+    await api('kpiUpsert',{token:ME.token,cluster:CLUSTER,kpi});
+    closeModal();showToast('KPI saved','ok');await refreshAll(false);renderKpiCfg();
+  }catch(e){showToast(e.message,'bad');}
+}
+function renderActualsUsers(){
+  document.getElementById('act-user').innerHTML=ROSTER.filter(r=>String(r.active)!=='false').map(r=>`<option value="${r.id}" data-role="${r.role}">${r.name} · ${roleShort(r.role)}</option>`).join('');
+  document.getElementById('act-month').value=MONTH; renderActuals();
+}
+function renderActuals(){
+  const sel=document.getElementById('act-user').selectedOptions[0]; if(!sel){document.getElementById('act-list').innerHTML='';return;}
+  const role=sel.dataset.role, uid=sel.value, month=document.getElementById('act-month').value||MONTH;
+  const manual=KPICFG.filter(k=>k.role===role&&k.type==='manual'&&String(k.active)!=='false');
+  document.getElementById('act-list').innerHTML=manual.map(k=>{
+    const a=KACT.find(x=>x.userId===uid&&x.kpiKey===k.kpiKey&&x.month===month);
+    return `<div class="row" style="align-items:flex-end;margin-bottom:8px">
+      <label class="fld" style="flex:2">${k.kpiName} <span class="muted">(target ${k.target})</span>
+        <input type="number" id="ac-${k.kpiKey}" value="${a?a.actual:''}" placeholder="actual"></label>
+      <button class="btn n sm" onclick="saveActual('${uid}','${k.kpiKey}','${month}')">Save</button></div>`;
+  }).join('')||'<p class="muted">No manual KPIs for this role.</p>';
+}
+async function saveActual(uid,kpiKey,month){
+  try{const actual=Number(document.getElementById('ac-'+kpiKey).value);
+    await api('kpiActual',{token:ME.token,cluster:CLUSTER,actual:{userId:uid,kpiKey,month,actual}});
+    showToast('Saved','ok');await refreshAll(false);}catch(e){showToast(e.message,'bad');}
+}
+
+/*════════════════════ PERMITS / OPEN PH ════════════════════*/
+function openPermit(){
+  modal(`<h3>Add permit / worksite</h3>
+   <div class="row"><label class="fld">Permit No<input id="pm-no"></label><label class="fld">Class<input id="pm-cls" placeholder="e.g. Hot Work / Cold"></label></div>
+   <div class="row" style="margin-top:10px"><label class="fld">Permit Holder<input id="pm-ph"></label><label class="fld">Location / Worksite<input id="pm-loc"></label></div>
+   <div class="row" style="margin-top:10px"><label class="fld">Valid from<input type="date" id="pm-vf"></label><label class="fld">Valid to<input type="date" id="pm-vt"></label></div>
+   <label class="fld" style="margin-top:10px">Activity description<input id="pm-act"></label>
+   <button class="btn p" style="margin-top:14px" onclick="savePermit()">Add permit</button>`);
+}
+async function savePermit(){
+  try{const permit={permitNo:val('pm-no'),permitClass:val('pm-cls'),phName:val('pm-ph'),location:val('pm-loc'),
+      validFrom:val('pm-vf'),validTo:val('pm-vt'),activityDesc:val('pm-act'),status:'active'};
+    if(!permit.location)throw new Error('Location required');
+    await api('addPermit',{token:ME.token,cluster:CLUSTER,permit});
+    closeModal();showToast('Permit added','ok');await refreshAll(false);renderWork();
+  }catch(e){showToast(e.message,'bad');}
+}
+function openOpenAdd(){
+  modal(`<h3>Add a Permit Holder</h3><p class="muted" style="margin-bottom:10px">No login needed — enter your cluster's open-add code.</p>
+   <label class="fld">Cluster code<input id="oa-code" placeholder="from your HSE Lead"></label>
+   <div class="row" style="margin-top:10px"><label class="fld">PH name<input id="oa-name"></label><label class="fld">Emp No<input id="oa-emp"></label></div>
+   <div class="row" style="margin-top:10px"><label class="fld">Company<input id="oa-co"></label><label class="fld">Location<input id="oa-loc"></label></div>
+   <button class="btn p" style="margin-top:14px" onclick="saveOpenPH()">Add Permit Holder</button>`);
+}
+async function saveOpenPH(){
+  try{const ph={name:val('oa-name'),empNo:val('oa-emp'),company:val('oa-co'),location:val('oa-loc'),addedBy:'open'};
+    if(!ph.name)throw new Error('Name required');
+    await api('addPH',{cluster:CLUSTER,clusterCode:val('oa-code').trim(),ph});
+    closeModal();showToast('Permit Holder added','ok');
+  }catch(e){showToast(e.message,'bad');}
+}
+
+/*════════════════════ UI HELPERS ════════════════════*/
+function modal(html){document.getElementById('modal-inner').innerHTML=html;document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal();};
+function showToast(m,t){const el=document.getElementById('toast');el.textContent=m;el.className='toast show '+(t||'');setTimeout(()=>el.className='toast',2600);}
+
+/*════════════════════ INIT ════════════════════*/
+loadRosterForLogin();
+connCheck();
+</script>
+</body>
+</html>
